@@ -53,7 +53,7 @@ const SignUp = () => {
   );
 
   return (
-    <div className="bg-[#212121] m-auto flex h-svh justify-center items-center flex-col text-white">
+    <div className="m-auto flex h-svh justify-center items-center flex-col bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
       <div className="text-2xl font-semibold">Sign up in to ChatBox</div>
       <div className="text-lg font-semibold ">Please enter your details.</div>
       <div className="m-4">
