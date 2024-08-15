@@ -1,14 +1,16 @@
-import React from "react";
+import { UserDetailsState } from "../../../../../../states/theme";
+import { useRecoilValue } from "recoil";
 
 const Avatar = () => {
+  const userDetails = useRecoilValue(UserDetailsState);
   return (
     <div>
-      <div className="avatar online">
-        <div className="w-16 rounded-full">
-          <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+      <div className="avatar">
+        <div className="w-16 ring-primary ring-offset-base-100  rounded-full ring ring-offset-2">
+          <img src={userDetails?.profilePic} alt="profilePic" />
         </div>
       </div>
-      <div className="font-h1">Pratham Srivastava</div>
+      <div className="font-h1">{userDetails?.fullname}</div>
     </div>
   );
 };

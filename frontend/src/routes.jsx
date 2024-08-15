@@ -13,6 +13,7 @@ const Router = () => {
     const getUserDetails = localStorage.getItem("chat-user");
     setUserDetails(JSON.parse(getUserDetails));
   }, []);
+
   return (
     <>
       <Routes>

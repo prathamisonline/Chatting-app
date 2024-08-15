@@ -24,7 +24,7 @@ const ChatCard = ({ user }) => {
       className=" flex gap-4 items-center px-4 py-3 w-[350px]"
       onClick={() => handleClickOnChat(user)}
     >
-      <div className="avatar online">
+      <div className="avatar">
         <div className="w-12 rounded-full">
           <img src={user?.profilePic} />
         </div>

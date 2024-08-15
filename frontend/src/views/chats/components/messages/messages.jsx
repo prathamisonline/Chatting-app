@@ -8,16 +8,32 @@ import {
 } from "../../../../states/theme";
 import UseChatApi from "../../../../store/chat/useChatApi";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useWebSocket } from "../../../../store/Websocket/UseWebsocket";
+import notificationSound from "../../../../assets/sounds/notification.mp3";
+import { convertToTime } from "../../../../utils/common";
+import { format } from "date-fns";
 
 const Messages = () => {
   const [messages, setMessages] = useRecoilState(MessageState);
   const userDetails = useRecoilValue(UserDetailsState);
-  // console.log("🚀 ~ Messages ~ userDetails:", userDetails);
   const lastMessageRef = useRef();
   const { sendChat } = UseChatApi();
   const selectedUser = useRecoilValue(SelectedUserState);
-
   const [message, setMessage] = useState("");
+  const { socket } = useWebSocket();
+  useEffect(() => {
+    socket?.on("newMessage", (newMessage) => {
+      console.log("connected new message");
+      newMessage.shouldShake = true;
+      const sound = new Audio(notificationSound);
+      sound.play();
+      setMessages((prev) => {
+        return [...prev, newMessage];
+      });
+    });
+
+    return () => socket?.off("newMessage");
+  }, [socket, setMessages, messages]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -45,6 +61,7 @@ const Messages = () => {
         senderId: userDetails._id,
         receiverId: selectedUser._id,
         message,
+        createdAt: format(new Date(), "yyyy-MM-dd'T'HH:mm:ssXXX"),
       },
     ]);
 
@@ -52,37 +69,40 @@ const Messages = () => {
   }, [message, selectedUser, sendChat, setMessages, userDetails]);
 
   return (
-    <div className="relative bg-[url('/image.png')] flex-1">
+    <div className="relative bg-[url('/image.png')] flex-1 backdrop-filter backdrop-blur-lg bg-opacity-0">
       <MessageTopBar />
-      <div className="flex justify-center flex-1 w-full max-h-dvh p-4 rounded-lg">
-        <div className="space-y-4 w-full h-[600px] p-4 rounded-lg overflow-auto">
-          {messages?.map((message, index) => (
-            <div
-              key={index}
-              ref={index === messages.length - 1 ? lastMessageRef : null}
-              className={`flex items-end ${
-                message.senderId === userDetails._id ? "justify-end" : ""
-              }`}
-            >
+      <div className="flex justify-center flex-1 w-full max-h-dvh p-4 rounded-lg ">
+        {messages?.length === 0 ? (
+          <p className="flex justify-center items-end pb-10 h-[600px] text-center text-4xl font-semibold text-black-600">
+            Send a message to start the conversation here.
+          </p>
+        ) : (
+          <div className="space-y-4 w-full h-[600px] p-4 rounded-lg overflow-auto">
+            {messages?.map((message, index) => (
               <div
-                className={`p-3 rounded-lg shadow-lg max-w-xs ${
-                  message.senderId === userDetails._id
-                    ? "bg-green-300 text-black"
-                    : "bg-white text-black"
+                key={index}
+                ref={index === messages.length - 1 ? lastMessageRef : null}
+                className={`flex items-end ${
+                  message.senderId === userDetails._id ? "justify-end" : ""
                 }`}
               >
-                <p className="text-sm">{message?.message}</p>
-                <div className="flex items-center justify-end mt-2 text-xs text-gray-500">
-                  {message.senderId !== userDetails._id && (
-                    <span className="text-red-500 mr-1">❤️</span>
-                  )}
-                  <span>18:12</span>
-                  <span className="ml-1">✔️</span>
+                <div
+                  className={`p-3 rounded-lg shadow-lg max-w-xs ${
+                    message.senderId === userDetails._id
+                      ? "bg-green-300 text-black"
+                      : "bg-white text-black"
+                  }`}
+                >
+                  <p className="text-sm">{message?.message}</p>
+                  <div className="flex items-center justify-end mt-2 text-xs text-gray-500">
+                    <span>{convertToTime(message?.createdAt)}</span>
+                    {/* <span className="ml-1">✔️</span> */}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
         <div className="absolute bottom-4 w-[700px]">
           <label className="relative block">
             <input

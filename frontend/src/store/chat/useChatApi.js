@@ -1,22 +1,22 @@
 import axios from 'axios';
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useRecoilState } from 'recoil';
-import { MessageState } from '../../states/theme';
+import { ChatUsersState, MessageState } from '../../states/theme';
 
 const UseChatApi = () => {
-    const [chatUsers, setChatUsers] = useState([])
+    const [chatUsers, setChatUsers] = useRecoilState(ChatUsersState)
     const [messages, setMessages] = useRecoilState(MessageState)
 
 
     const getChatUsers = useCallback(async () => {
         const { data } = await axios.get(`/api/users`);
         setChatUsers(data)
-    }, [])
+    }, [setChatUsers])
 
     const getUserWiseMessage = useCallback(async (id) => {
         const { data } = await axios.get(`/api/messages/${id}`);
         setMessages(data)
-    }, [])
+    }, [setMessages])
 
     const sendChat = useCallback(async (id, payload) => {
         const { data } = await axios.post(`/api/messages/send/${id}`, payload);

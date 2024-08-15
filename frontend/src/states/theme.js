@@ -13,6 +13,10 @@ export const MessageState = atom({
     key: "MessageState",
     default: []
 })
+export const ChatUsersState = atom({
+    key: "ChatUsersState",
+    default: []
+})
 export const SelectedUserState = atom({
     key: "SelectedUserState",
     default: {}

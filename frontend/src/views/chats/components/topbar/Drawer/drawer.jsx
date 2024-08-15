@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { IoMdMenu } from "react-icons/io";
 import { AiOutlineLogout } from "react-icons/ai";
 import { useRecoilState } from "recoil";
