@@ -1,24 +1,55 @@
 import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { useRecoilState } from "recoil";
+import { UserDetailsState } from "../../states/theme";
 
 const useSignup = () => {
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate()
+    const [userDetails, setUserDetails] = useRecoilState(UserDetailsState);
 
 
     const login = async (username, password) => {
-        const success = handleInputLoginErrors(username, password);
-        if (!success) return;
-        setLoading(true);
-        try {
-            const { data } = await axios.post(`/api/auth/login`, { username, password });
+        // const success = handleInputLoginErrors(username, password);
+        // if (!success) return;
+        // setLoading(true);
+        // try {
+        //     const { data } = await axios.post(`/api/auth/login`, { username, password });
 
+        //     if (data.error) {
+        //         throw new Error(data.error);
+        //     }
+
+        //     localStorage.setItem("chat-user", (data));
+        //     navigate("/chat")
+        //     setUserDetails(data);
+        // } catch (error) {
+        //     toast.error(error.message);
+        // } finally {
+        //     setLoading(false);
+
+        // }
+
+        // const success = handleInputErrors(username, password);
+        // if (!success) return;
+        // setLoading(true);
+        try {
+            const res = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const data = await res.json();
             if (data.error) {
                 throw new Error(data.error);
             }
 
             localStorage.setItem("chat-user", JSON.stringify(data));
-            // setAuthUser(data);
+            setUserDetails(data);
+            navigate("/chat")
         } catch (error) {
             toast.error(error.message);
         } finally {
@@ -45,10 +76,27 @@ const useSignup = () => {
             toast.error(error.message);
         } finally {
             setLoading(false);
+            navigate("/login")
+        }
+    };
+    const logout = async () => {
+        try {
+            const { data } = await axios.post(`/api/auth/logout`, {});
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            localStorage.removeItem("chat-user");
+            setUserDetails(null);
+        } catch (error) {
+            toast.error(error.message);
+        } finally {
+            setLoading(false);
+            navigate("/login")
         }
     };
 
-    return { loading, signup, login };
+    return { loading, signup, login, logout };
 };
 export default useSignup;
 

@@ -1,12 +1,10 @@
-import Messages from "./components/messages/messages";
-import Sidebar from "./components/sidebar";
+import Drawer from "./components/topbar/Drawer/drawer";
 
 const Chat = () => {
   return (
-    <div className="flex w-full h-screen">
-      <Sidebar />
-      <Messages />
-    </div>
+    <>
+      <Drawer />
+    </>
   );
 };
 

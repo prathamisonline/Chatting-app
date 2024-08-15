@@ -1,14 +1,14 @@
 import React from "react";
 
-const MessageBody = () => {
+const MessageBody = ({ messages, userDetails }) => {
   return (
     <>
       <div className=" bg-[url('/image.png')] w-full h-svh p-4 rounded-lg">
-        <div className="text-center mb-4">
+        {/* <div className="text-center mb-4">
           <span className="inline-block bg-blue-400 text-white text-xs px-2 py-1 rounded-full">
             Today
           </span>
-        </div>
+        </div> */}
         <div className="space-y-4">
           {/* Sender message */}
           <div className="flex items-end">
