@@ -7,11 +7,11 @@ import messageRoutes from "./router/messageRoutes.js"
 import dotenv from "dotenv";
 import { app, server } from "./socket/socket.js";
 
+dotenv.config();
 app.use(express.json()); // to parse the incoming requests with JSON payloads (from req.body)
 app.use(cookieParser());
 // const io = new Server(server);
 
-dotenv.config();
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/messages", messageRoutes);
