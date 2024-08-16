@@ -1,7 +1,8 @@
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import MessageTopBar from "./components/MessageTopBar";
 import { IoSend } from "react-icons/io5";
 import {
+  ChatUsersState,
   MessageState,
   SelectedUserState,
   UserDetailsState,
@@ -14,32 +15,62 @@ import { convertToTime } from "../../../../utils/common";
 import { format } from "date-fns";
 
 const Messages = () => {
-  const [messages, setMessages] = useRecoilState(MessageState);
+  const setChatUsers = useSetRecoilState(ChatUsersState);
+  const messages = useRecoilValue(MessageState);
   const userDetails = useRecoilValue(UserDetailsState);
-  const lastMessageRef = useRef();
-  const { sendChat } = UseChatApi();
-  const selectedUser = useRecoilValue(SelectedUserState);
+  const [selectedUser, setSelectedUser] = useRecoilState(SelectedUserState);
+
   const [message, setMessage] = useState("");
+  const lastMessageRef = useRef();
+
   const { socket } = useWebSocket();
+  const { sendChat } = UseChatApi();
+
+  // Load old messages into selectedUser when the component mounts
+  useEffect(() => {
+    if (messages.length > 0) {
+      setSelectedUser((prev) => ({
+        ...prev,
+        messages: [...(prev.messages || []), ...messages],
+      }));
+    }
+  }, []);
+
   useEffect(() => {
     socket?.on("newMessage", (newMessage) => {
-      console.log("connected new message");
       newMessage.shouldShake = true;
       const sound = new Audio(notificationSound);
       sound.play();
-      setMessages((prev) => {
-        return [...prev, newMessage];
+
+      setChatUsers((prevChatUsers) => {
+        return prevChatUsers.map((user) => {
+          if (user._id === newMessage.senderId) {
+            return {
+              ...user,
+              messages: [...(user.messages || []), newMessage],
+            };
+          }
+          return user;
+        });
       });
+
+      if (selectedUser._id === newMessage.senderId) {
+        setSelectedUser((prev) => ({
+          ...prev,
+          messages: [...(prev.messages || []), newMessage],
+        }));
+      }
     });
 
     return () => socket?.off("newMessage");
-  }, [socket, setMessages, messages]);
+  }, [selectedUser, socket, setChatUsers, setSelectedUser]);
 
+  // Scroll to the last message when messages update
   useEffect(() => {
     setTimeout(() => {
       lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 100);
-  }, [messages]);
+  }, [selectedUser]);
 
   const handleChatInput = useCallback((e) => {
     const { value } = e.target;
@@ -52,51 +83,68 @@ const Messages = () => {
       return;
     }
 
-    const payload = { message };
-    sendChat(selectedUser._id, payload);
+    const newMessage = {
+      senderId: userDetails._id,
+      receiverId: selectedUser._id,
+      message,
+      createdAt: format(new Date(), "yyyy-MM-dd'T'HH:mm:ssXXX"),
+    };
 
-    setMessages((prev) => [
+    sendChat(selectedUser._id, { message });
+
+    setSelectedUser((prev) => ({
       ...prev,
-      {
-        senderId: userDetails._id,
-        receiverId: selectedUser._id,
-        message,
-        createdAt: format(new Date(), "yyyy-MM-dd'T'HH:mm:ssXXX"),
-      },
-    ]);
+      messages: [...(prev.messages || []), newMessage],
+    }));
 
-    setMessage(""); // Clear the input field after sending
-  }, [message, selectedUser, sendChat, setMessages, userDetails]);
+    setMessage("");
+  }, [message, selectedUser, sendChat, setSelectedUser, userDetails]);
+
+  const handleChatKeyDown = useCallback(
+    (e) => {
+      const { value } = e.target;
+      setMessage(value);
+
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmitChat();
+      }
+    },
+    [handleSubmitChat]
+  );
 
   return (
     <div className="relative bg-[url('/image.png')] flex-1 backdrop-filter backdrop-blur-lg bg-opacity-0">
       <MessageTopBar />
       <div className="flex justify-center flex-1 w-full max-h-dvh p-4 rounded-lg ">
-        {messages?.length === 0 ? (
+        {selectedUser?.messages?.length === 0 ? (
           <p className="flex justify-center items-end pb-10 h-[600px] text-center text-4xl font-semibold text-black-600">
             Send a message to start the conversation here.
           </p>
         ) : (
           <div className="space-y-4 w-full h-[600px] p-4 rounded-lg overflow-auto">
-            {messages?.map((message, index) => (
+            {selectedUser?.messages?.map((msg, index) => (
               <div
                 key={index}
-                ref={index === messages.length - 1 ? lastMessageRef : null}
+                ref={
+                  index === selectedUser.messages.length - 1
+                    ? lastMessageRef
+                    : null
+                }
                 className={`flex items-end ${
-                  message.senderId === userDetails._id ? "justify-end" : ""
+                  msg.senderId === userDetails._id ? "justify-end" : ""
                 }`}
               >
                 <div
                   className={`p-3 rounded-lg shadow-lg max-w-xs ${
-                    message.senderId === userDetails._id
+                    msg.senderId === userDetails._id
                       ? "bg-green-300 text-black"
                       : "bg-white text-black"
                   }`}
                 >
-                  <p className="text-sm">{message?.message}</p>
+                  <p className="text-sm">{msg?.message}</p>
                   <div className="flex items-center justify-end mt-2 text-xs text-gray-500">
-                    <span>{convertToTime(message?.createdAt)}</span>
-                    {/* <span className="ml-1">✔️</span> */}
+                    <span>{convertToTime(msg?.createdAt)}</span>
                   </div>
                 </div>
               </div>
@@ -111,6 +159,7 @@ const Messages = () => {
               className="input input-bordered w-full pr-10"
               value={message}
               onChange={handleChatInput}
+              onKeyDown={handleChatKeyDown}
             />
             <button className="absolute inset-y-0 right-0 flex items-center pr-3">
               <IoSend size={24} onClick={handleSubmitChat} />

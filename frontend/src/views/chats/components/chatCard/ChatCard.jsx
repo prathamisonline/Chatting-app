@@ -1,14 +1,20 @@
 import PropTypes from "prop-types";
 import UseChatApi from "../../../../store/chat/useChatApi";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useSetRecoilState } from "recoil";
-import { SelectedUserState } from "../../../../states/theme";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { MessageState, SelectedUserState } from "../../../../states/theme";
+import { useWebSocket } from "../../../../store/Websocket/UseWebsocket";
 
 const ChatCard = ({ user }) => {
   const { getUserWiseMessage } = UseChatApi();
   const setSelectedUser = useSetRecoilState(SelectedUserState);
+  const messages = useRecoilValue(MessageState);
+
   const [searchParams, setSearchParams] = useSearchParams();
+  // const { onlineUsers } = useWebSocket();
+
+  // const isOnline = onlineUsers?.includes(user?._id);
 
   const handleClickOnChat = useCallback(
     (user) => {
@@ -19,12 +25,21 @@ const ChatCard = ({ user }) => {
     [getUserWiseMessage, setSearchParams, setSelectedUser]
   );
 
+  useEffect(() => {
+    if (messages.length > 0) {
+      setSelectedUser((prev) => ({
+        ...prev,
+        messages: [...(prev.messages || []), ...messages],
+      }));
+    }
+  }, [messages, setSelectedUser]);
+
   return (
     <div
       className=" flex gap-4 items-center px-4 py-3 w-[350px]"
       onClick={() => handleClickOnChat(user)}
     >
-      <div className="avatar">
+      <div className={`avatar `}>
         <div className="w-12 rounded-full">
           <img src={user?.profilePic} />
         </div>
