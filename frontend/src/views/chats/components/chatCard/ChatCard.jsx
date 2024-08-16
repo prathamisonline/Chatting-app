@@ -2,19 +2,56 @@ import PropTypes from "prop-types";
 import UseChatApi from "../../../../store/chat/useChatApi";
 import { useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import { MessageState, SelectedUserState } from "../../../../states/theme";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import notificationSound from "../../../../assets/sounds/notification.mp3";
+
+import {
+  ChatUsersState,
+  MessageState,
+  SelectedUserState,
+} from "../../../../states/theme";
 import { useWebSocket } from "../../../../store/Websocket/UseWebsocket";
 
 const ChatCard = ({ user }) => {
-  const { getUserWiseMessage } = UseChatApi();
-  const setSelectedUser = useSetRecoilState(SelectedUserState);
-  const messages = useRecoilValue(MessageState);
-
   const [searchParams, setSearchParams] = useSearchParams();
-  // const { onlineUsers } = useWebSocket();
 
-  // const isOnline = onlineUsers?.includes(user?._id);
+  const messages = useRecoilValue(MessageState);
+  const setChatUsers = useSetRecoilState(ChatUsersState);
+  const [selectedUser, setSelectedUser] = useRecoilState(SelectedUserState);
+
+  const { getUserWiseMessage } = UseChatApi();
+  const { socket, onlineUsers } = useWebSocket();
+
+  const isOnline = onlineUsers?.includes(user?._id);
+
+  useEffect(() => {
+    socket?.on("newMessage", (newMessage) => {
+      newMessage.shouldShake = true;
+      const sound = new Audio(notificationSound);
+      sound.play();
+
+      setChatUsers((prevChatUsers) => {
+        return prevChatUsers.map((user) => {
+          if (user._id === newMessage.senderId) {
+            return {
+              ...user,
+              messages: [...(user.messages || []), newMessage],
+            };
+          }
+          return user;
+        });
+      });
+
+      if (selectedUser._id === newMessage.senderId) {
+        setSelectedUser((prev) => ({
+          ...prev,
+          messages: [...(prev.messages || []), newMessage],
+        }));
+      }
+    });
+
+    return () => socket?.off("newMessage");
+  }, [selectedUser, socket, setChatUsers, setSelectedUser]);
 
   const handleClickOnChat = useCallback(
     (user) => {
@@ -39,7 +76,7 @@ const ChatCard = ({ user }) => {
       className=" flex gap-4 items-center px-4 py-3 w-[350px]"
       onClick={() => handleClickOnChat(user)}
     >
-      <div className={`avatar `}>
+      <div className={`avatar ${isOnline ? "online" : ""}`}>
         <div className="w-12 rounded-full">
           <img src={user?.profilePic} />
         </div>

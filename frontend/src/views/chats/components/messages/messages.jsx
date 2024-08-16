@@ -1,21 +1,17 @@
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import MessageTopBar from "./components/MessageTopBar";
 import { IoSend } from "react-icons/io5";
 import {
-  ChatUsersState,
   MessageState,
   SelectedUserState,
   UserDetailsState,
 } from "../../../../states/theme";
 import UseChatApi from "../../../../store/chat/useChatApi";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useWebSocket } from "../../../../store/Websocket/UseWebsocket";
-import notificationSound from "../../../../assets/sounds/notification.mp3";
 import { convertToTime } from "../../../../utils/common";
 import { format } from "date-fns";
 
 const Messages = () => {
-  const setChatUsers = useSetRecoilState(ChatUsersState);
   const messages = useRecoilValue(MessageState);
   const userDetails = useRecoilValue(UserDetailsState);
   const [selectedUser, setSelectedUser] = useRecoilState(SelectedUserState);
@@ -23,7 +19,6 @@ const Messages = () => {
   const [message, setMessage] = useState("");
   const lastMessageRef = useRef();
 
-  const { socket } = useWebSocket();
   const { sendChat } = UseChatApi();
 
   // Load old messages into selectedUser when the component mounts
@@ -35,35 +30,6 @@ const Messages = () => {
       }));
     }
   }, []);
-
-  useEffect(() => {
-    socket?.on("newMessage", (newMessage) => {
-      newMessage.shouldShake = true;
-      const sound = new Audio(notificationSound);
-      sound.play();
-
-      setChatUsers((prevChatUsers) => {
-        return prevChatUsers.map((user) => {
-          if (user._id === newMessage.senderId) {
-            return {
-              ...user,
-              messages: [...(user.messages || []), newMessage],
-            };
-          }
-          return user;
-        });
-      });
-
-      if (selectedUser._id === newMessage.senderId) {
-        setSelectedUser((prev) => ({
-          ...prev,
-          messages: [...(prev.messages || []), newMessage],
-        }));
-      }
-    });
-
-    return () => socket?.off("newMessage");
-  }, [selectedUser, socket, setChatUsers, setSelectedUser]);
 
   // Scroll to the last message when messages update
   useEffect(() => {
