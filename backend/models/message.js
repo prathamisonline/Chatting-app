@@ -15,6 +15,11 @@ export const messageSchema = new Schema({
         type: String,
         required: true
     },
+    readStatus: {
+        type: Boolean,
+        required: false
+    }
+
 },
     { timestamps: true }
 )

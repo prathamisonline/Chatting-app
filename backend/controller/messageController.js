@@ -21,7 +21,9 @@ export const sendMessage = async (req, res) => {
         const newMessage = new Message({
             senderId: senderId,
             receiverId: receiverId,
-            message: message
+            message: message,
+            readStatus: false
+
         })
 
         if (newMessage) {
@@ -58,5 +60,29 @@ export const getMessage = async (req, res) => {
     } catch (error) {
         console.log("Error in getMessage controller", error.message)
         res.status(500).json({ error: "Internal server errorr" })
+    }
+}
+
+export const updateRead = async (req, res) => {
+    try {
+        const { updateReadAll } = req.body;
+        const { id: receiverId } = req.params;
+        const senderId = req.user._id
+
+        if (!updateReadAll) {
+            return res.status(400).json({ error: "updateReadAll is required" })
+        }
+        let conversation = await Conversation.findOne({
+            participants: { $all: [senderId, receiverId] },
+        })
+
+        if (!conversation) {
+            return res.status(404).json({ error: "Conversation not found" });
+        }
+        await Message.updateMany({ senderId: senderId, receiverId: receiverId }, { $set: { readStatus: true } })
+        res.status(200).json({ message: 'Messages marked as read' });
+    } catch (error) {
+        console.log("Error in updateReadStatus controller", error.message);
+        res.status(500).json({ error: "Internal server error" });
     }
 }
