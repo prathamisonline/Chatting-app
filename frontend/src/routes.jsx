@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Login from "./views/auth/login";
 import SignUp from "./views/auth/signup";
 import Home from "./views/home";
@@ -22,14 +22,14 @@ const Router = () => {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="*" element={<Home />} />
+            <Route path="*" element={<Navigate to="/" />} />
           </>
         ) : (
           <>
             <Route path="/chat" element={<Chat />} />
+            <Route path="*" element={<Navigate to="/chat" />} />
           </>
         )}
-        {/* <Route path="/chat" element={<Chat />} /> */}
       </Routes>
     </>
   );
