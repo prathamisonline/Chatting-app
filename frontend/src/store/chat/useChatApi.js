@@ -13,10 +13,17 @@ const UseChatApi = () => {
         setChatUsers(data)
     }, [setChatUsers])
 
+    const updateReadStatus = useCallback(async (id) => {
+        const { data } = await axios.put(`/api/messages/${id}`, {
+            updateReadAll: true
+        });
+        console.log("🚀 ~ sendChat ~ data:", data)
+    }, [])
     const getUserWiseMessage = useCallback(async (id) => {
         const { data } = await axios.get(`/api/messages/${id}`);
+        updateReadStatus(id)
         setMessages(data)
-    }, [setMessages])
+    }, [setMessages, updateReadStatus])
 
     const sendChat = useCallback(async (id, payload) => {
         const { data } = await axios.post(`/api/messages/send/${id}`, payload);
@@ -24,9 +31,6 @@ const UseChatApi = () => {
 
     }, [])
 
-    useEffect(() => {
-
-    }, [])
     return (
         { getChatUsers, chatUsers, getUserWiseMessage, messages, sendChat }
     )

@@ -29,7 +29,7 @@ const Messages = () => {
         messages: [...(prev.messages || []), ...messages],
       }));
     }
-  }, []);
+  }, [messages, setSelectedUser]);
 
   // Scroll to the last message when messages update
   useEffect(() => {

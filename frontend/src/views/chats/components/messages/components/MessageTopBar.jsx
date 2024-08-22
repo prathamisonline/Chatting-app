@@ -17,7 +17,7 @@ const MessageTopBar = () => {
   }, [getChatUsers]);
 
   return (
-    <div className=" flex justify-start items-center h-[58px] p-4">
+    <div className=" flex grow-0 justify-between items-center h-[58px] p-4">
       <div className="flex justify-start items-center gap-4">
         <div className={`avatar ${isOnline ? "online" : ""}`}>
           <div className="w-10 rounded-full">
@@ -30,6 +30,11 @@ const MessageTopBar = () => {
           </div>
           <div className="text-[12px] text-gray-500">Last seen 5 min ago</div>
         </div>
+      </div>
+      <div className="flex gap-2 items-center">
+        <div>a</div>
+        <div>b</div>
+        <div>c</div>
       </div>
     </div>
   );

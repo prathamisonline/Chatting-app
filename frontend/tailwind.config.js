@@ -10,6 +10,7 @@ export default {
     daisyui,
   ],
   theme: {
+
     extend: {
       backgroundImage: {
         'hero-pattern': "url('/image.svg')",

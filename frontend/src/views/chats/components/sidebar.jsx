@@ -11,7 +11,7 @@ const Sidebar = () => {
   }, [getChatUsers]);
 
   return (
-    <div className="grow-1 max-w-[500px] m-1 ">
+    <div className="grow-1 w-[425px] m-1 ">
       <Topbar />
       {chatUsers.map((user) => {
         return (

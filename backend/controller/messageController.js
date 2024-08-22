@@ -74,12 +74,20 @@ export const updateRead = async (req, res) => {
         }
         let conversation = await Conversation.findOne({
             participants: { $all: [senderId, receiverId] },
-        })
+        })  // Log the conversation and messages for debugging
+        console.log("Conversation found:", conversation);
+        console.log("Updating messages between sender:", senderId, "and receiver:", receiverId);
+
 
         if (!conversation) {
             return res.status(404).json({ error: "Conversation not found" });
         }
-        await Message.updateMany({ senderId: senderId, receiverId: receiverId }, { $set: { readStatus: true } })
+        const result = await Message.updateMany(
+            { senderId: senderId, receiverId: receiverId },
+            { $set: { readStatus: true } }
+        );
+
+        console.log("Update result:", result);
         res.status(200).json({ message: 'Messages marked as read' });
     } catch (error) {
         console.log("Error in updateReadStatus controller", error.message);

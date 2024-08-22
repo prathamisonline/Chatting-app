@@ -10,7 +10,7 @@ export const useWebSocket = () => {
 
     useEffect(() => {
         if (userDetails) {
-            const socket = io("https://chat-app-y50t.onrender.com", {
+            const socket = io("http://localhost:4000", {
                 query: {
                     userId: userDetails._id,
                 },

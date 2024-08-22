@@ -9,7 +9,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       <RecoilRoot>
-        <App />
+        <App
+          data-theme={
+            !JSON.parse(localStorage.getItem("isdark")) ? "night" : "light"
+          }
+        />
       </RecoilRoot>
     </BrowserRouter>
   </React.StrictMode>

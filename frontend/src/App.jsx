@@ -6,7 +6,7 @@ import { DarkModeState } from "./states/theme";
 function App() {
   const darkmode = useRecoilValue(DarkModeState);
   return (
-    <div data-theme={darkmode ? "night" : "light"} className="h-svh">
+    <div className="overflow-hidden">
       <Router />
       <Toaster />
     </div>

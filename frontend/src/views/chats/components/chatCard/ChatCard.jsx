@@ -62,18 +62,18 @@ const ChatCard = ({ user }) => {
     [getUserWiseMessage, setSearchParams, setSelectedUser]
   );
 
-  useEffect(() => {
-    if (messages.length > 0) {
-      setSelectedUser((prev) => ({
-        ...prev,
-        messages: [...(prev.messages || []), ...messages],
-      }));
-    }
-  }, [messages, setSelectedUser]);
+  // useEffect(() => {
+  //   if (messages.length > 0) {
+  //     setSelectedUser((prev) => ({
+  //       ...prev,
+  //       messages: [...messages],
+  //     }));
+  //   }
+  // }, [messages, setSelectedUser]);
 
   return (
     <div
-      className=" flex gap-4 items-center px-4 py-3 w-[350px]"
+      className=" flex gap-4 items-center px-4 py-3"
       onClick={() => handleClickOnChat(user)}
     >
       <div className={`avatar ${isOnline ? "online" : ""}`}>
