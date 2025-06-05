@@ -6,6 +6,7 @@ import Chat from "./views/chats/chat";
 import { useEffect } from "react";
 import { useRecoilState } from "recoil";
 import { UserDetailsState } from "./states/theme";
+import Settings from "./views/settings/Settings";
 
 const Router = () => {
   const [userDetails, setUserDetails] = useRecoilState(UserDetailsState);
@@ -27,6 +28,7 @@ const Router = () => {
         ) : (
           <>
             <Route path="/chat" element={<Chat />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/chat" />} />
           </>
         )}
